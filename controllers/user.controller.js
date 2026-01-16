@@ -91,64 +91,121 @@ const Registeruser = async (req, res) => {
     });
   }
 };
-const LoginUser = async (req, res) => {
-  const { email, password } = req.body;
+// const LoginUser = async (req, res) => {
+//   const { email, password } = req.body;
 
-  if (!email) {
-    res.status(404).json({
-      success: false,
-      message: "Email is required",
-    });
-  }
-  if (!password) {
-    res.status(404).json({
-      success: false,
-      message: "Password is required",
-    });
-  }
-  const user = await User.findOne({
-    $or: [{ email: email }, { password: password }],
-  });
-  if (!user) {
-    res.status(400).json({
-      success: false,
-      message: "User alreday Exist",
-    });
-  }
-  const MatchPasword = await bcrypt.compare(password,user.password)
+//   if (!email) {
+//     res.status(404).json({
+//       success: false,
+//       message: "Email is required",
+//     });
+//   }
+//   if (!password) {
+//     res.status(404).json({
+//       success: false,
+//       message: "Password is required",
+//     });
+//   }
+//   const user = await User.findOne({
+//     $or: [{ email: email }, { password: password }],
+//   });
+//   if (!user) {
+//     res.status(400).json({
+//       success: false,
+//       message: "User alreday Exist",
+//     });
+//   }
+//   const MatchPasword = await bcrypt.compare(password,user.password)
 
-  if (!MatchPasword) {
-    res.status(404).json({
-      success:false,
-      message:"Password is Invalid"
-    })
-  }
+//   if (!MatchPasword) {
+//     res.status(404).json({
+//       success:false,
+//       message:"Password is Invalid"
+//     })
+//   }
 
-  const  {accessToken} = await Token(user._id)
+//   const  {accessToken} = await Token(user._id)
 
-  const loggedInUser = await  User.findById(user._id)
+//   const loggedInUser = await  User.findById(user._id)
 
-  if (!loggedInUser) {
-    res.status(400).json({
-      success:false,
-      message:"User Not Looged In"
-    })
-  }
+//   if (!loggedInUser) {
+//     res.status(400).json({
+//       success:false,
+//       message:"User Not Looged In"
+//     })
+//   }
 
-  const options = {
-    httpOnly:true,
-    secure:true
-  }
-  return res.status(200)
-  .cookie("accessToken",accessToken,options)
-  .json({
-    success:true,
-    message:" User Logged in Successfully",
-      user:loggedInUser,accessToken
+//   const options = {
+//     httpOnly:true,
+//     secure:true
+//   }
+//   return res.status(200)
+//   .cookie("accessToken",accessToken,options)
+//   .json({
+//     success:true,
+//     message:" User Logged in Successfully",
+//       user:loggedInUser,accessToken
     
-  })
+//   })
   
+// };
+
+
+export const LoginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User does not exist",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid password",
+      });
+    }
+
+    // Generate JWT token
+    const { accessToken } = await Token(user._id);
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // HTTPS only on Vercel
+      sameSite: "none",
+    };
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, cookieOptions)
+      .json({
+        success: true,
+        message: "User logged in successfully",
+        user,
+        accessToken,
+      });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
 };
+
 const UpdateProfile = async (req, res) => {
   try {
     const { username, email, password, address } = req.body;
