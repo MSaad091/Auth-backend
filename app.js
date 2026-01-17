@@ -1,61 +1,96 @@
-// import express from 'express';
-// import cookieParser from 'cookie-parser';
-// import cors from 'cors';
-// import UserRouter from './routes/route.js';
-// import serverless from 'serverless-http';
+// // import express from "express";
+// // import cors from "cors";
+// // import cookieParser from "cookie-parser";
+// // import UserRouter from "./routes/route.js";
+
+// // const app = express();
+
+// // const allowedOrigins = [
+// //   "http://localhost:5173",
+// //   "https://YOUR-FRONTEND.vercel.app"
+// // ];
+
+// // app.use(cors({
+// //   origin: function(origin, callback) {
+// //     if (!origin || allowedOrigins.includes(origin)) {
+// //       callback(null, true);
+// //     } else {
+// //       callback(new Error("Not allowed by CORS"));
+// //     }
+// //   },
+// //   credentials: true,
+// //   methods: ["GET","POST","PUT","DELETE","OPTIONS"]
+// // }));
+
+// // // JSON + URL encoded
+// // app.use(express.json({ limit: "16kb" }));
+// // app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+// // app.use(cookieParser());
+
+// // // Routes
+// // app.use("/user", UserRouter);
+
+// // app.get("/", (req, res) => res.send("Backend live!"));
+
+// // // ✅ Remove this line:
+// // // app.options("/*", cors());  <-- Remove, crash fix
+
+// // export default app;
+// import express from "express";
+// import cors from "cors";
+// import cookieParser from "cookie-parser";
+// import UserRouter from "./routes/route.js";
 
 // const app = express();
 
-// // Frontend URL for CORS
 // app.use(cors({
-//     origin: "https://auth-app-ten-bay.vercel.app",
-//     credentials: true
+//   origin: ["http://localhost:5173", "https://YOUR-FRONTEND.vercel.app"],
+//   credentials: true,
 // }));
 
-
-// app.use(express.json({ limit: "16kb" }));
-// app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-// app.use(express.static("public"));
+// app.use(express.json());
 // app.use(cookieParser());
 
-// app.get("/", (req, res) => {
-//   res.send("Backend is live on Vercel!");
-// });
+// app.use("/user", UserRouter);
 
-// // Routes
-// app.use('/user', UserRouter);
-
-// // ✅ Serverless export for Vercel
-// export default serverless(app);
-
-import express from 'express';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import UserRouter from './routes/route.js';
-import serverless from 'serverless-http';
+// export default app;
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import UserRouter from "./routes/route.js";
 
 const app = express();
 
-// CORS
+// Allowed frontend origins
+const allowedOrigins = [
+  "http://localhost:5173",                   // Local dev
+  "https://auth-app-ten-bay.vercel.app"     // Your deployed frontend
+];
+
 app.use(cors({
-  origin: "https://auth-app-ten-bay.vercel.app",
-  credentials: true,
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like Postman) or from allowed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true, // ✅ Needed for cookies
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
 
-// Handle preflight requests
-app.options("*", cors());
-
+// Parse JSON and URL-encoded bodies
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(express.static("public"));
+
+// Parse cookies
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
-  res.send("Backend is live on Vercel!");
-});
+// Routes
+app.use("/user", UserRouter);
 
-app.use('/user', UserRouter);
+// Test route
+app.get("/", (req, res) => res.send("🚀 Backend Live!"));
 
-export default serverless(app);
+export default app;
