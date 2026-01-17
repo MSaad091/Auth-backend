@@ -175,21 +175,48 @@ export const Registeruser = async (req, res) => {
 };
 
 // Login User
+// export const LoginUser = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     if (!email || !password) return res.status(400).json({ success: false, message: "Email and Password required" });
+
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(401).json({ success: false, message: "User does not exist" });
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return res.status(401).json({ success: false, message: "Invalid password" });
+
+//     const { accessToken } = await Token(user._id);
+
+//     res.status(200)
+//       .cookie("accessToken", accessToken, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "none" })
+//       .json({ success: true, message: "User logged in successfully", user });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: "Server error", error: error.message });
+//   }
+// };
 export const LoginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ success: false, message: "Email and Password required" });
+    if (!email || !password)
+      return res.status(400).json({ success: false, message: "Email and Password required" });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ success: false, message: "User does not exist" });
+    if (!user)
+      return res.status(401).json({ success: false, message: "User does not exist" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ success: false, message: "Invalid password" });
+    if (!isMatch)
+      return res.status(401).json({ success: false, message: "Invalid password" });
 
     const { accessToken } = await Token(user._id);
 
     res.status(200)
-      .cookie("accessToken", accessToken, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "none" })
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "none"
+      })
       .json({ success: true, message: "User logged in successfully", user });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
