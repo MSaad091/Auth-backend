@@ -62,6 +62,6 @@ userSchema.methods.generateToken = function () {
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: "7d" }
   );
-};
+}; 
 
 export const User = mongoose.model("User", userSchema);
