@@ -154,7 +154,7 @@ export const Registeruser = async (req, res) => {
 
     if (!req.file) return res.status(400).json({ success: false, message: "Avatar file required" });
 
-    const avatarimg = await UploadCloudinary(req.file.buffer);
+    const avatarimg = await UploadCloudinary(req.file.path);
     if (!avatarimg) return res.status(400).json({ success: false, message: "Avatar upload failed" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -195,7 +195,7 @@ export const Registeruser = async (req, res) => {
 //     res.status(500).json({ success: false, message: "Server error", error: error.message });
 //   }
 // };
-export const LoginUser = async (req, res) => {
+export const LoginUser = async (req, res) => { 
   try {
     const { email, password } = req.body;
     if (!email || !password)
@@ -214,8 +214,8 @@ export const LoginUser = async (req, res) => {
     res.status(200)
       .cookie("accessToken", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none"
+        secure:false,
+        sameSite: "lax"
       })
       .json({ success: true, message: "User logged in successfully", user });
   } catch (error) {
@@ -235,7 +235,7 @@ export const UpdateProfile = async (req, res) => {
 
     if (password) updateData.password = await bcrypt.hash(password, 10);
     if (req.file) {
-      const avatarimg = await UploadCloudinary(req.file.buffer);
+      const avatarimg = await UploadCloudinary(req.file.path);
       if (!avatarimg) return res.status(400).json({ success: false, message: "Avatar upload failed" });
       updateData.avatar = avatarimg.secure_url;
     }
