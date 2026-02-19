@@ -213,9 +213,10 @@ export const LoginUser = async (req, res) => {
 
     res.status(200)
       .cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure:true,
-        sameSite: "None"
+       httpOnly: true,                   // JS cannot access cookie
+  secure: true,                     // MUST in production (https)
+  sameSite: "None",                  // MUST for cross-domain
+  maxAge: 1000 * 60 * 60 * 24
       })
       .json({ success: true, message: "User logged in successfully", user });
   } catch (error) {
